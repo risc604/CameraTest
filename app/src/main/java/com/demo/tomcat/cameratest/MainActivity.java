@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 //http://www.theappguruz.com/blog/android-take-photo-camera-gallery-code-sample
 
@@ -63,21 +65,19 @@ public class MainActivity extends AppCompatActivity
                     mCursor.moveToFirst();
                     String mPath = mCursor.getString(mImageIndex);
                     File mFile = new File(mPath);
-                    Log.d(TAG, "mPath: " + mPath);
-
+                    int degree = getImageDegree(mPath);
+                    Log.d(TAG, "mPath: " + mPath + ", degree: " + degree);
 
                     try
                     {
                         Bitmap bitmap = BitmapFactory.decodeStream(cr.openInputStream(uri));
                         if (bitmap.getWidth() > bitmap.getHeight())
-                            ScalePic(bitmap, mPhone.heightPixels);
+                            ScalePic(bitmap, mPhone.heightPixels, degree);
                     }
                     catch (FileNotFoundException e)
                     {
                         e.printStackTrace();
                     }
-
-
                 }
                 break;
 
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void ScalePic(Bitmap bitmap, int phone)
+    private void ScalePic(Bitmap bitmap, int phone, int degree)
     {
         float mScale = 1;
 
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity
 
             Matrix mMat = new Matrix();
             mMat.setScale(mScale, mScale);
-            mMat.postRotate(90.0f);
+            mMat.postRotate((float) degree);
 
             Bitmap mScaleBitmap = Bitmap.createBitmap(bitmap, 0, 0,
                     bitmap.getWidth(), bitmap.getHeight(), mMat, false);
@@ -149,6 +149,48 @@ public class MainActivity extends AppCompatActivity
         else
             mImg.setImageBitmap(bitmap);
     }
+
+    private int getImageDegree(String photoPath)
+    {
+        int degree = 0;
+        ExifInterface ei = null;
+        try
+        {
+            ei = new ExifInterface(photoPath);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED);
+
+        switch (orientation)
+        {
+
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                //rotateImage(bitmap, 90);
+                degree = 90;
+                break;
+
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                //rotateImage(bitmap, 180);
+                degree = 180;
+                break;
+
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                //rotateImage(bitmap, 270);
+                degree = 270;
+                break;
+
+            case ExifInterface.ORIENTATION_NORMAL:
+            default:
+                break;
+        }
+
+        return degree ;
+    }
+
 
 
 }
