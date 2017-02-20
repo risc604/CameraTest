@@ -64,10 +64,6 @@ public class MainActivity extends AppCompatActivity
                     //Cursor mCursor = managedQuery(uri, mMediaDATA, null, null, null);
                     Cursor mCursor = this.getContentResolver().query(uri, mMediaDATA, null, null, null);
                     Log.d(TAG, "uri: " + uri + ", mCursor: " + mCursor + ", counts: " + mCursor.getCount());
-                    //for (int i=0; i<mCursor.getCount(); i++)
-                    //{
-                    //    Log.d(TAG, "mCursor[" + i + "]: " + mCursor.getString(i));
-                    //}
                     mCursor.moveToFirst();
 
                     int mImageIndex = mCursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
@@ -257,7 +253,8 @@ public class MainActivity extends AppCompatActivity
         try
         {
             ei = new ExifInterface(photoPath);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             e.printStackTrace();
         }
